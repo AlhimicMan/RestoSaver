@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="Помогите сохранить ваши любимые рестораны в эпидемию COVID-19"
+    />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <!-- You probably want to customize these for your local versions -->
+    <meta property="og:url" content="https://restosaver.ru" />
+    <meta property="og:title" content="RestoSaver" />
+    <meta property="og:description" content="Помогите сохранить ваши любимые заведения во время эпидемии COVID-19 покупая подарочные карты на ваш будущий визит." />
+    <meta property="og:type" content="website" />
+    <link href="static/css/base.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Roboto+Slab:300,400,700" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,700,800,900" rel="stylesheet">
+
+    <title>RestoSaver - поможем вашим любимым ресторанам в кризис</title>
+  </head>
+  <body>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="app">
+      <div id="addNewPlace" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                  <h4 class="modal-title">Добавьте свой ресторан</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                </div>
+                <div class="modal-body" v-if="!placeSent">
+                  <p calss="add-info">Добавьте свой ресторан в список ресторанов, которые предлагают посетителям купить сертификат на будущее посещение. 
+                  После отправки формы мы с вами свяжемся для учтонения информации и разместим вас в каталоге. </p>
+                  <form>
+                    <div class="mb-3">
+                      <input type="text" class="form-control" v-model="NewPlace.Name" placeholder="Название вашего заведения">
+                      <div class="invalid-field" v-if="NewPlaceValidator.NameInvalid">
+                        Введите название вашего заведения
+                      </div>
+                    </div>
+                    <div class="mb-3">
+                      <textarea class="form-control rounded-0" rows="5" v-model="NewPlace.Descr" placeholder="Описание заведения"></textarea>
+                    </div>
+                    <div class="mb-3">
+                      <input type="text" class="form-control" v-model="NewPlace.Web" placeholder="Ваш сайт">
+                      <div class="invalid-field" v-if="NewPlaceValidator.WebInvalid">
+                        Введите название вашего сайта
+                      </div>
+                    </div>
+                    <div class="mb-3">
+                      <input type="text" class="form-control" v-model="NewPlace.Address" placeholder="Адрес заведения">
+                      <div class="invalid-field" v-if="NewPlaceValidator.AddressInvalid">
+                        Введите ваш адрес
+                      </div>
+                    </div>
+                    <div class="mb-3">
+                      <input type="email" class="form-control" v-model="NewPlace.Email" placeholder="Email">
+                      <div class="invalid-field" v-if="NewPlaceValidator.EmailInvalid">
+                        Введите ваш email для связи
+                      </div>
+                    </div>
+                    <div class="mb-3">
+                      <input type="text" class="form-control" v-model="NewPlace.Phone" placeholder="Телефон">
+                      <div class="invalid-field" v-if="NewPlaceValidator.PhoneInvalid">
+                        Введите ваш номер телефона для связи
+                      </div>
+                    </div>
+                  
+                </div>
+                <div class="modal-body" v-if="placeSent">
+                  <p>Ваш запрос отправлен. С вами свяжется оператор для уточнения информации и размещения на сайте.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>
+                    <button type="button" class="btn btn-primary" @click="SendNewPlace" v-if="!placeSent">Отправить заявку</button>
+                </div>
+              </form>
+            </div>
+        </div>
+    </div>
+
+  <div id="placeCard" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title">{{curPlace.Name}}</h4>
+              <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body">
+              <img width="100%" height="225" class="place-card-img" :src="curPlace.ImageURL">
+              <p calss="add-info">{{curPlace.DescrFull}}</p>
+              
+            </div>
+            <div class="modal-footer" v-if="!reqSent">
+              <h6 class="bycard-form-header">Купить подарочную карту на будущее посещение.</h6>
+              <input type="text" class="form-control" v-model="NewGCard.Name" placeholder="Ваши имя и фамилия">
+              <div class="invalid-field" v-if="NewGCardValidator.NameInvalid">
+                Введите ваше имя, оно будет в сертификате
+              </div>
+              <input type="email" class="form-control" v-model="NewGCard.Email" placeholder="Ваш Email">
+              <div class="invalid-field" v-if="NewGCardValidator.EmailInvalid">
+                Введите ваш Email, на него отправим сертификат
+              </div>
+              <input type="phone" class="form-control" v-model="NewGCard.Phone" placeholder="Ваш телефон (+7XXXXXXXXXXX)">
+              <div class="invalid-field" v-if="NewGCardValidator.PhoneInvalid">
+                Введите ваш телефон
+              </div>
+              <input type="text" class="form-control" v-model="NewGCard.Summ" placeholder="Сумма покупки">
+              <div class="invalid-field" v-if="NewGCardValidator.SummInvalid">
+                Введите сумму покупки, минимум 500 руб.
+              </div>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>
+                <button type="button" class="btn btn-primary" @click="SendGCardReq" v-if="!reqSent">Отправить заявку</button>
+            </div>
+            <div class="modal-footer" v-if="reqSent">
+              <p>Спасибо за поддержку! Мы с вами свяжемся в ближайшее время для уточнения способа оплаты.</p>
+              <p>Ваша поддержка позволит вашему любимому месте пережить этот кризис!</p>
+            </div>
+        </div>
+    </div>
+  </div>
+
+  <div id="aboutUs" class="modal fade">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+              <h4 class="modal-title">Здравствуйте!</h4>
+              <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            </div>
+            <div class="modal-body">
+              
+              <p calss="add-info">Рады приветсвовать вас на сайте {{message}}!</p>
+              <p>Наш проект посвящен поддержке ресторанов и кафе во время кризиса, вызванного эпидемоей COVID-19.</p>
+              <p>На сайте размещены небольшие кафе и рестораны, которые рады вашей помощи, чтобы пережить время, когда работать нельзя. 
+                Арендную плату и зарплату персоналу платить нужно даже несмотря на то, что клиенты не могут посетить заведение.</p>
+              <p>Чтобы заведение могло пережить сложные времена мы предлагаем вам приобрести подарочный сертификат на будущее посещение. Полученную оплату мы переведем заведению, чтобы они могли оплатить необходимые платежи.</p>
+              <p>Владельцев кафе и ресторанов призываем заполнить форму добавления себя в наш каталог. Это совершенно бесплатно!</p>
+              <p>Если вы не нашли свое завдеение, просто заполните форму и мы свяжемся с владельцами для обсуждения варианто добавления в каталог.</p>
+              <p>На данный момент проект работает в тестовом режиме и не принимает оплату онлайн. Оставляйте заявку, мы вам напишем и согласуем варианты оплаты подарочного сертификата.</p>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>
+          </div>
+        </div>
+    </div>
+  </div>
+
+    <header>
+      <div class="bg-dark test-header"><p>На данный момент сайт работает в тестовом режиме, вы можете оставить заявку, мы с вами свяжемся для уточнения способа оплаты.</p></div>
+      <div class="navbar navbar-dark shadow-sm">
+        <div class="container d-flex justify-content-between">
+          <a class="navbar-brand d-flex align-items-center">
+            <strong>RestoSave</strong>
+          </a>
+          <div class="header-buttons">
+            <a href="#aboutUs" class="btn button-about" data-toggle="modal">О нас</a>
+            <a href="#addNewPlace" class="btn btn-success button-add-place" data-toggle="modal">Добавить место</a>
+          </div>
+        </div>
+      </div>
+    </header>
+    
+    <main role="main">
+    
+      <section class="jumbotron text-center">
+        <div class="container">
+          <h1>Помогите сохранить ваши любимые рестораны в эпидемию COVID-19</h1>
+          <p class="lead text-muted">Купите подарочную карту в любимом ресторане и воспользуйтесь ей в ваш следующий визит после открытия ресторана. Помогите любимому месте пережить эти нелегкие времена.</p>
+        </div>
+      </section>
+      
+      <div class="rests py-3 bg-light">
+        <div class="container">
+          <div class="row search-field justify-content-md-center">
+            <div class="col-8">
+              <form class="row">
+                <div class="col-12 col-sm pr-sm-0">
+                    <input type="text" name="search" id="search" placeholder="Найти место" v-model="SearchQuery" class="form-control">
+                </div>
+                
+            </form>
+            </div>
+          </div>
+          <div class="row justify-content-center" v-if="!placesLoaded">
+            <div class="col-1">
+              <div class="nb-spinner"></div>
+            </div>
+          </div>
+          <div class="row" v-if="placesLoaded">
+            
+            <div class="col-md-4" v-for="rest in restsList">
+              <div class="card mb-4 shadow-sm">
+                <img class="card-image" width="100%" height="225" :src="rest.ImageURL">
+                <div class="card-body">
+                  <p class="card-text">
+                    <h5>{{rest.Name}}</h5>
+                    <p class="place-card-description">{{rest.Descr}}</p>
+                  </p>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div class="btn-group">
+                      <a href="#placeCard" class="btn btn-sm btn-outline-secondary" data-toggle="modal" @click="ShowPlaceCard(rest)">Посмотреть</a>
+                    </div>
+                    <small class="text-muted" v-for="tag in rest.Tags">{{tag}}</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    
+    </main>
+    
+    <footer class="text-muted">
+      <div class="container">
+        <p>Поддержи свой любимый ресторан!</p>
+        <p>&copy; RestoSave, 2020</p>
+       </div>
+    </footer>
+  </div>
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script>window.jQuery || document.write('<script src="/docs/4.4/assets/js/vendor/jquery.slim.min.js"><\/script>')</script>
+    <script src="/static/js/bootstrap.bundle.min.js" integrity="sha384-6khuMg9gaYr5AxOqhkVIODVIvm9ynTT5J4V1cfthmT+emCG6yVmEZsRHdxlotUnm" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="/static/js/app.js"></script>
+  </body>
+
+</html>
