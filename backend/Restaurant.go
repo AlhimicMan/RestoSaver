@@ -1,6 +1,8 @@
-package models
+package main
 
-import "github.com/jinzhu/gorm"
+import (
+	"github.com/jinzhu/gorm"
+)
 
 type Restaurant struct {
 	Model

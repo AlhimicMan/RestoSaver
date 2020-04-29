@@ -1,7 +1,6 @@
 package main
 
 import (
-	"RestoSave/backend/models"
 	"encoding/json"
 	"fmt"
 	"github.com/jinzhu/gorm"
@@ -36,8 +35,8 @@ func NewAPIHandler() (*APIHandler, error) {
 		return nil, err
 	}
 	handler.db = db
-	db.CreateTable(&models.Restaurant{})
-	db.CreateTable(&models.GiftCard{})
+	db.CreateTable(&Restaurant{})
+	db.CreateTable(&GiftCard{})
 	return handler, nil
 }
 
@@ -49,7 +48,7 @@ func (h *APIHandler) SendResponseState(resp *APIResponse, w http.ResponseWriter)
 
 // apigen:api {"url": "/rests/all", "auth": false}
 func (h *APIHandler) GetAllPlaces(w http.ResponseWriter, r *http.Request) {
-	var DBRests []models.Restaurant
+	var DBRests []Restaurant
 	h.db.Where("moderated = ?", true).Find(&DBRests)
 	results, err := json.Marshal(&DBRests)
 	if err != nil {
@@ -74,7 +73,7 @@ func (h *APIHandler) AddNewPlace(w http.ResponseWriter, r *http.Request) {
 		h.SendResponseState(NErr, w)
 		return
 	}
-	NewRestaurant := &models.Restaurant{}
+	NewRestaurant := &Restaurant{}
 	err := json.NewDecoder(r.Body).Decode(NewRestaurant)
 	if err != nil {
 		log.Println("/rest/add. Error getting body", err)
@@ -98,7 +97,7 @@ func (h *APIHandler) BuyNewCard(w http.ResponseWriter, r *http.Request) {
 		h.SendResponseState(NErr, w)
 		return
 	}
-	NewCard := &models.GiftCard{}
+	NewCard := &GiftCard{}
 	err := json.NewDecoder(r.Body).Decode(NewCard)
 	if err != nil {
 		log.Println("/rest/add. Error getting body", err)
@@ -120,7 +119,7 @@ func (h *APIHandler) BuyNewCard(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *APIHandler) PrintDBPlaces(w http.ResponseWriter, r *http.Request) {
-	var DBRests []models.Restaurant
+	var DBRests []Restaurant
 	h.db.Find(&DBRests)
 	_, err := json.Marshal(&DBRests)
 	if err != nil {

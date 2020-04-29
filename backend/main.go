@@ -25,7 +25,6 @@ func main() {
 		return
 	}
 
-	//err = ParseJSON(srvHandler.db)
 	if err != nil {
 		log.Println("Error parsing json", err)
 	}

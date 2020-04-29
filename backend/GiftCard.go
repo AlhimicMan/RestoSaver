@@ -1,4 +1,4 @@
-package models
+package main
 
 type GiftCard struct {
 	Model
