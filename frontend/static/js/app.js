@@ -227,7 +227,13 @@ var app = new Vue({
     },
     mounted() {
     //Get list of restaurants
-    $("#aboutUs").modal('show');
+    var isshow = localStorage.getItem('isshow');
+    if (isshow== null) {
+        localStorage.setItem('isshow', 1);
+
+        // Show popup here
+        $("#aboutUs").modal('show');
+    }
     let vApp = this
     this.ShowOnPageNow = this.MaxPlacesPerPage
     axios.get('/api/rests/all')
